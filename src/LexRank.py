@@ -2,8 +2,8 @@ import operator
 import re
 import networkx as nx
 from src.modules.tfidf import *
-from src.modules._word2vec_ import *
-from src.modules._doc2vec_ import *
+from src.modules.word2vec import *
+from src.modules.doc2vec import *
 # from TextGraphics.src.graph import TextGraph
 # import rouge
 from  pyvi import ViTokenizer
@@ -85,11 +85,11 @@ def build_graph(text, similarityThreshold = 0.01, max_threshold = 0.95,
 class LexRank:
     def __init__(self, text):
         # self.text = ViTokenizer.tokenize(text)
-        self.text  = text
+        self.text  = text.lower()
         self.graph = build_graph(self.text, tfidf_option=False,doc2vec_option= False, word2vec_option=True)
 
 
-    def summary(self, limit_pagerank=0.8, limit_mmr = 0.6):
+    def summary(self, limit_pagerank=0.5, limit_mmr = 0.5):
         total_sentences = len(self.graph.nodes())
         n_sentences = int(total_sentences * limit_pagerank)
         print(len(self.graph.nodes()), (n_sentences))

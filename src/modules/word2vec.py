@@ -15,16 +15,19 @@ class W2V(object):
         pass
 
     def pre_process(self,data):
+        "tokenize text and remove all token with len = 1"
         result = []
         for row in data :
             tokens = tokenizer.tokenize(row)
-            result.append(tokens)
+            for token in tokens :
+                if len(token) > 1 :
+                    result.append(tokens)
         return result
 
     def build_model_w2v(self ,data_,train_online = False) :
         if not train_online:
             data = self.pre_process(data_)
-            models = Word2Vec(data,size=100,window=5,workers=4,min_count=1,iter=5,sg=1)
+            models = Word2Vec(data,size=200,window=5,workers=4,min_count=1,iter=5,sg=1)
             with open(model_w2v_file, 'wb') as f:
                 pickle.dump(models, f)
 
@@ -33,7 +36,8 @@ class W2V(object):
                 models = pickle.load(f)
             data = self.pre_process(data_)
             models.train(data)
-            models.save(model_w2v_file)
+            with open(model_w2v_file, 'wb') as f:
+                pickle.dump(models, f)
 
     def avg_representation_w2v_tfidf(self, tf, setence):
 

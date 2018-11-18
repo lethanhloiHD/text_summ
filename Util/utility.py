@@ -4,6 +4,18 @@ import numpy as np
 # from numpy.linalg import norm
 import re
 import nltk
+from config import *
+
+
+def pre_process_data(text):
+    """ normalize string """
+
+    cont  = re.sub(r'\b\d+(?:\.\d+)?\s+', '', text)
+    for i, v in mapping.items():
+        if i in cont:
+            cont = cont.replace(i, v)
+    return cont
+
 
 def split_sentences(text):
     """
@@ -48,15 +60,16 @@ def load_data_train(directory_train, segmentation = True) :
         _file_csv = os.path.join(directory_train, file)
         with open(_file_csv, encoding='utf-8') as file_:
             reader = csv.DictReader(file_)
-
             for row in reader:
                 title = row['title_token'].strip().lower()
                 sapo = row['sapo_token'].strip().lower()
                 content = row['content_token'].strip().lower()
+                cont = (title + ". " + sapo + ". " + content )
+                cont = pre_process_data(cont)
                 if segmentation:
-                    result.append(title + ". " + sapo + ". " + content)
+                    result.append(cont)
                 else:
-                    cont = (title + ". " + sapo + ". " + content).replace("_", " ")
+                    cont = (cont).replace("_", " ")
                     result.append(cont)
     return result
 
@@ -65,5 +78,4 @@ def load_data_train(directory_train, segmentation = True) :
 def load_data_test(file_txt):
     with open(file_txt, "r") as file:
         content = file.read()
-
     return content

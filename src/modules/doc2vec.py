@@ -19,17 +19,18 @@ class D2V(object):
             for sent in sentences :
                 sent_ = sent.replace("_"," ")
                 tokens = tokenizer.tokenize(sent_)
-                if len(tokens) > 5 :
+                if len(tokens) > 4 :
                     result.append(sent)
         return result
 
     def build_model(self, data,save = True):
-        data_ = self.pre_process_data(data)
+        data_sentences = self.pre_process_data(data)
+        print("number senteces :", len(data_sentences))
         tagged_data = [TaggedDocument(words=word_tokenize(d.lower()),
-                                      tags=[str(i)]) for i, d in enumerate(data_)]
+                                      tags=[str(i)]) for i, d in enumerate(data_sentences)]
         max_epochs = 10
         alpha = 0.025
-        model = Doc2Vec(vec_size=100,alpha=alpha,min_alpha=0.00025,min_count=2,dm=1)
+        model = Doc2Vec(vec_size=200,alpha=alpha,min_alpha=0.0025,min_count=2,dm=1)
         model.build_vocab(tagged_data)
 
         for epoch in range(max_epochs):
@@ -37,7 +38,7 @@ class D2V(object):
             model.train(tagged_data,
                         total_examples=model.corpus_count,
                         epochs=model.iter)
-            model.alpha -= 0.0002
+            model.alpha -= 0.002
             model.min_alpha = model.alpha
         if save :
             with open(model_d2v_file, 'wb') as f:
@@ -49,11 +50,15 @@ class D2V(object):
         return model
 
     def get_vector_sentences(self,model, sentence ):
+        token_split = tokenizer.tokenize(sentence)
+        tokens= []
+        for t in token_split :
+            if len(t) > 1 :
+                tokens.append(t)
 
-        tokens = tokenizer.tokenize(sentence)
         vector = model.infer_vector(tokens)
-
         return vector
+
     def get_cosine_similary(self, model,sentence1, sentence2):
         vector1 = self.get_vector_sentences(model,sentence1)
         vector2 = self.get_vector_sentences(model,sentence2)

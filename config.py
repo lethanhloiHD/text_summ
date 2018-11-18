@@ -12,3 +12,10 @@ model_d2v_file = 'model/d2v.model'
 model_w2v_file = 'model/w2v.model'
 
 stopword_path = 'data/stoplist/stopwords.txt'
+
+
+mapping = {
+    "tp. ":"tp.",
+    "mr. ":"mr.",
+    "ms. ":"ms."
+}
