@@ -19,15 +19,18 @@ class W2V(object):
         result = []
         for row in data :
             tokens = tokenizer.tokenize(row)
+            tokens_ = []
             for token in tokens :
                 if len(token) > 1 :
-                    result.append(tokens)
+                    tokens_.append(token)
+            result.append(tokens_)
         return result
 
     def build_model_w2v(self ,data_,train_online = False) :
         if not train_online:
             data = self.pre_process(data_)
-            models = Word2Vec(data,size=200,window=5,workers=4,min_count=1,iter=5,sg=1)
+            models = Word2Vec(data,size=200,window=5,workers=4,
+                              min_count=2,iter=10,sg=1)
             with open(model_w2v_file, 'wb') as f:
                 pickle.dump(models, f)
 
@@ -39,17 +42,21 @@ class W2V(object):
             with open(model_w2v_file, 'wb') as f:
                 pickle.dump(models, f)
 
-    def avg_representation_w2v_tfidf(self, tf, setence):
 
-        # model_w2v = Word2Vec.load(model_w2v_file)
-
+    def load_model(self,):
         with open(model_w2v_file, 'rb') as f:
             model_w2v = pickle.load(f)
+        return model_w2v
+
+
+    def avg_representation_w2v_tfidf(self, tf,models,feature_name, model_w2v, setence):
+
+        # model_w2v = Word2Vec.load(model_w2v_file)
         words = set(tokenizer.tokenize(setence.strip().lower()))
-        tfidf_score = tf.get_tfidf_word_in_sentence(setence)
+        tfidf_score = tf.get_tfidf_word_in_sentence(models,feature_name,setence)
         words_keys = tfidf_score.keys()
 
-        sentence_pre = np.zeros(100)
+        sentence_pre = np.zeros(200)
         number_word = len(words)
 
         for word in words:
@@ -59,12 +66,12 @@ class W2V(object):
                 word_pre = w_vec * tf_vec
                 sentence_pre += word_pre
 
-        sentence_pre = (sentence_pre / max(number_word, 1))
+        # sentence_pre = (sentence_pre / max(number_word, 1))
         return sentence_pre
 
-    def get_cosine_similary_w2v_tfidf(self, tf, sentence1, sentence2):
-        pre1 = self.avg_representation_w2v_tfidf( tf, sentence1)
-        pre2 = self.avg_representation_w2v_tfidf( tf, sentence2)
+    def get_cosine_similary_w2v_tfidf(self, tf,models, feature_name,model_w2v, sentence1, sentence2):
+        pre1 = self.avg_representation_w2v_tfidf( tf,models,feature_name, model_w2v, sentence1)
+        pre2 = self.avg_representation_w2v_tfidf( tf,models,feature_name, model_w2v,sentence2)
         score_cosine = cosine_similarity_vector(pre1, pre2)
         print(score_cosine)
 

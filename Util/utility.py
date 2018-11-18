@@ -6,16 +6,16 @@ import re
 import nltk
 from config import *
 
-
-def pre_process_data(text):
+def pre_process_data(text, remove_number = True):
     """ normalize string """
-
-    cont  = re.sub(r'\b\d+(?:\.\d+)?\s+', '', text)
+    if remove_number :
+        cont  = re.sub(r'\b\d+(?:\.\d+)?\s+', '', text)
+    else :
+        cont = text
     for i, v in mapping.items():
         if i in cont:
             cont = cont.replace(i, v)
     return cont
-
 
 def split_sentences(text):
     """

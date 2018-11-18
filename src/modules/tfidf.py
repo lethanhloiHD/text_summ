@@ -17,7 +17,7 @@ class Tfidf(object):
 
     def build_model_featureNames(self,data):
         model = TfidfVectorizer(analyzer='word', ngram_range=(1,1),
-                                stop_words=self.stopwords, min_df=1, )
+                                stop_words=self.stopwords, min_df = 1, max_df=0.7)
 
         model.fit(data)
         feature_names = model.get_feature_names()

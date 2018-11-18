@@ -12,7 +12,7 @@ class D2V(object):
     def __init__(self):
         pass
 
-    def pre_process_data(self,data):
+    def pre_process(self,data):
         result = []
         for row in data :
             sentences = split_sentences(row)
@@ -24,7 +24,7 @@ class D2V(object):
         return result
 
     def build_model(self, data,save = True):
-        data_sentences = self.pre_process_data(data)
+        data_sentences = self.pre_process(data)
         print("number senteces :", len(data_sentences))
         tagged_data = [TaggedDocument(words=word_tokenize(d.lower()),
                                       tags=[str(i)]) for i, d in enumerate(data_sentences)]
@@ -55,7 +55,7 @@ class D2V(object):
         for t in token_split :
             if len(t) > 1 :
                 tokens.append(t)
-
+        # tokens = token_split
         vector = model.infer_vector(tokens)
         return vector
 
