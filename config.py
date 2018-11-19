@@ -1,6 +1,6 @@
 file_data_train = 'data/data_train/data_100.csv'
 directory_train = 'data/data_train'
-
+file_data_test = 'data/data_test/news/Summarization_BinhPT_Training.csv'
 
 file_test_text = 'data/data_test/wiki/text/file1.txt'
 file_test_sum = 'data/data_test/wiki/sum/sum.txt'

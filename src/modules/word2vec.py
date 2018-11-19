@@ -73,6 +73,5 @@ class W2V(object):
         pre1 = self.avg_representation_w2v_tfidf( tf,models,feature_name, model_w2v, sentence1)
         pre2 = self.avg_representation_w2v_tfidf( tf,models,feature_name, model_w2v,sentence2)
         score_cosine = cosine_similarity_vector(pre1, pre2)
-        print(score_cosine)
 
         return score_cosine
