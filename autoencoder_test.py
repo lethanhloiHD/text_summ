@@ -122,58 +122,57 @@ string_gen = sentence_generator(string_seq,string_embedding_matrix,1)
 
 
 ########################################################################
-# inputs = Input(shape=(SEQUENCE_LEN, EMBED_SIZE), name="input")
-# encoded = Bidirectional(LSTM(LATENT_SIZE), merge_mode="sum",
-#     name="encoder_lstm")(inputs)
-# decoded = RepeatVector(SEQUENCE_LEN, name="repeater")(encoded)
-# decoded = Bidirectional(LSTM(EMBED_SIZE, return_sequences=True),
-#     merge_mode="sum",
-#     name="decoder_lstm")(decoded)
-#
-# autoencoder = Model(inputs, decoded)
-#
-# autoencoder.compile(optimizer="sgd", loss="mse")
-#
-# num_train_steps = len(Xtrain) // BATCH_SIZE
-# num_test_steps = len(Xtest) // BATCH_SIZE
-# early_stopping = EarlyStopping(monitor='val_loss', patience=5, mode='min')
-# checkpoint = ModelCheckpoint(filepath="autoencoder.h5", save_best_only=True)
-# autoencoder.fit_generator(train_gen,
-#     steps_per_epoch=num_train_steps,
-#     epochs=NUM_EPOCHS,
-#     validation_data=test_gen,
-#     validation_steps=num_test_steps,
-#     callbacks=[checkpoint,early_stopping])
+inputs = Input(shape=(SEQUENCE_LEN, EMBED_SIZE), name="input")
+encoded = Bidirectional(LSTM(LATENT_SIZE), merge_mode="sum",
+    name="encoder_lstm")(inputs)
+decoded = RepeatVector(SEQUENCE_LEN, name="repeater")(encoded)
+decoded = Bidirectional(LSTM(EMBED_SIZE, return_sequences=True),
+    merge_mode="sum",
+    name="decoder_lstm")(decoded)
 
-autoencoder = load_model("autoencoder.h5")
+autoencoder = Model(inputs, decoded)
+
+autoencoder.compile(optimizer="sgd", loss="mse")
+
+num_train_steps = len(Xtrain) // BATCH_SIZE
+num_test_steps = len(Xtest) // BATCH_SIZE
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, mode='min')
+checkpoint = ModelCheckpoint(filepath="autoencoder.h5", save_best_only=True)
+autoencoder.fit_generator(train_gen,
+    steps_per_epoch=num_train_steps,
+    epochs=NUM_EPOCHS,
+    validation_data=test_gen,
+    validation_steps=num_test_steps,
+    callbacks=[checkpoint,early_stopping])
+
 encoder = Model(autoencoder.input, autoencoder.get_layer("encoder_lstm").output)
-
-xtest, ytest = string_gen.__next__()
-a  = encoder.predict(ytest)
-print(a[0].shape, a[0])
-# def compute_cosine_similarity(x, y):
-#     return np.dot(x, y) / (np.linalg.norm(x, 2) * np.linalg.norm(y, 2))
-# #
-# k = 5
-# cosims = np.zeros((k))
-# i = 0
+# encoder = load_model("autoencoder.h5")
+# xtest, ytest = string_gen.__next__()
+# a  = encoder.predict(ytest)
+# print(a[0].shape, a[0])
+def compute_cosine_similarity(x, y):
+    return np.dot(x, y) / (np.linalg.norm(x, 2) * np.linalg.norm(y, 2))
 #
-# for bid in range(num_test_steps):
-#     xtest, ytest = test_gen.__next__()
-#     print("xtest :",xtest.shape)
-#     print("ytest :",ytest.shape)
-#     ytest_ = autoencoder.predict(xtest)
-#     print("ytest : ",ytest_.shape)
-#     Xvec = encoder.predict(ytest)
-#     print("Xvec :",Xvec.shape)
-#     Yvec = encoder.predict(ytest_)
-#     print("Yvec :",Yvec.shape)
-#     for rid in range(Xvec.shape[0]):
-#         if i >= k:
-#             break
-#         cosims[i] = compute_cosine_similarity(Xvec[rid], Yvec[rid])
-#         if i <= 10:
-#             print("cosine ",cosims[i])
-#             i += 1
-#     if i >= k:
-#         break
+k = 5
+cosims = np.zeros((k))
+i = 0
+
+for bid in range(num_test_steps):
+    xtest, ytest = test_gen.__next__()
+    print("xtest :",xtest.shape)
+    print("ytest :",ytest.shape)
+    ytest_ = autoencoder.predict(xtest)
+    print("ytest : ",ytest_.shape)
+    Xvec = encoder.predict(ytest)
+    print("Xvec :",Xvec.shape)
+    Yvec = encoder.predict(ytest_)
+    print("Yvec :",Yvec.shape)
+    for rid in range(Xvec.shape[0]):
+        if i >= k:
+            break
+        cosims[i] = compute_cosine_similarity(Xvec[rid], Yvec[rid])
+        if i <= 10:
+            print("cosine ",cosims[i])
+            i += 1
+    if i >= k:
+        break

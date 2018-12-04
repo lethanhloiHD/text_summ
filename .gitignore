@@ -1,6 +1,6 @@
 *.pyc
 venv
 data
-model
+models
 __pycache__
 .idea

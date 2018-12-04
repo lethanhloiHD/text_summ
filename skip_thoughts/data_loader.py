@@ -1,6 +1,7 @@
 """"
 Here we implement a class for loading data.
 """
+
 import torch
 from torch.autograd import Variable
 from skip_thoughts.vocab import *
