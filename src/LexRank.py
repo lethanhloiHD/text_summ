@@ -93,7 +93,7 @@ def build_graph(text, similarityThreshold = 0.001, max_threshold = 1.0,
 
 def pre_process(text):
     text_token = ViTokenizer.tokenize(text)
-    text_ = pre_process_data(text_token,remove_number= False)
+    text_ = pre_process_data(text_token, remove_number_punctuation= False)
     text_ = text_.lower()
     return text_
 

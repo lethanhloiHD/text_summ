@@ -2,11 +2,12 @@ from src.LexRank import *
 from src.modules.doc2vec import *
 import nltk
 import  numpy as np
-import os
-
-data_test, len = load_data_test()
-# print(data_test,len)
-avg_rouge(data_test,len)
+# import os
+# from skip_thoughts.evaluate import *
+# from skip_thoughts.train import *
+# data_test, len = load_data_test()
+# # print(data_test,len)
+# avg_rouge(data_test,len)
 
 
 # data = load_data_train(directory_train)
@@ -31,3 +32,12 @@ avg_rouge(data_test,len)
 # sum_lexrank = lexrank.summary()
 # print(sum_lexrank)
 # print(lexrank.evalutor_rouge(sum_lexrank,summ))
+
+# load_data_train_skipthought(directory_train)
+# train_skipthought()
+# usable_encoder = UsableEncoder()
+# X = [
+#     'viet nam vo dich',
+# ]
+# print(usable_encoder.encode(X))
+

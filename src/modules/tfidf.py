@@ -14,10 +14,9 @@ class Tfidf(object):
     def __init__(self,):
         self.stopwords = load_stopwords(stopword_path)
 
-
     def build_model_featureNames(self,data):
         model = TfidfVectorizer(analyzer='word', ngram_range=(1,1),
-                                stop_words=self.stopwords, min_df = 1, max_df=0.7)
+                                stop_words=self.stopwords, min_df = 2, max_df=0.7)
 
         model.fit(data)
         feature_names = model.get_feature_names()
@@ -27,8 +26,8 @@ class Tfidf(object):
         with open(file_feature_names, 'wb') as f:
             pickle.dump(feature_names, f)
 
-
     def load_model_featureNames(self,):
+
         with open(file_model_tfidf, 'rb') as f:
             models = pickle.load(f)
         with open(file_feature_names, 'rb') as f:

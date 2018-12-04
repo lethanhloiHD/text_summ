@@ -20,6 +20,7 @@ class D2V(object):
                 sent_ = sent.replace("_"," ")
                 tokens = tokenizer.tokenize(sent_)
                 if len(tokens) > 4 :
+                    sent = pre_process_data(sent,remove_number_punctuation=True)
                     result.append(sent)
         return result
 

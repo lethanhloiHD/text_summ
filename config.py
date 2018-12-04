@@ -13,9 +13,23 @@ model_w2v_file = 'model/w2v.model'
 
 stopword_path = 'data/stoplist/stopwords.txt'
 
-
+pattern = ['[^-!?,"]+']
 mapping = {
     "tp. ":"tp.",
     "mr. ":"mr.",
     "ms. ":"ms."
 }
+
+"""
+Configuration file for skip thought
+"""
+
+VOCAB_SIZE = 20000
+USE_CUDA = False
+DEVICES = [2]
+CUDA_DEVICE = DEVICES[0]
+VERSION = 1
+MAXLEN = 30
+
+loc="model/saved_models/skip-best"
+data_skip = 'data/data_skipthought/dummy_corpus.txt.pkl'

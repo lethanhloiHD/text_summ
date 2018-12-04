@@ -18,6 +18,7 @@ class W2V(object):
         "tokenize text and remove all token with len = 1"
         result = []
         for row in data :
+            row = pre_process_data(row,remove_number_punctuation=True)
             tokens = tokenizer.tokenize(row)
             tokens_ = []
             for token in tokens :
@@ -26,15 +27,14 @@ class W2V(object):
             result.append(tokens_)
         return result
 
-    def build_model_w2v(self ,data_,train_online = False) :
-        if not train_online:
+    def build_model_w2v(self ,data_,train_continue = False) :
+        if not train_continue:
             data = self.pre_process(data_)
-            models = Word2Vec(data,size=200,window=5,workers=4,
-                              min_count=2,iter=10,sg=1)
+            models = Word2Vec(data,size=200,window=5,workers=4,min_count=2,iter=10,sg=1)
             with open(model_w2v_file, 'wb') as f:
                 pickle.dump(models, f)
 
-        elif train_online:
+        elif train_continue:
             with open(model_w2v_file, 'rb') as f:
                 models = pickle.load(f)
             data = self.pre_process(data_)
@@ -49,11 +49,12 @@ class W2V(object):
         return model_w2v
 
 
-    def avg_representation_w2v_tfidf(self, tf,models,feature_name, model_w2v, setence):
+    def avg_representation_w2v_tfidf(self, tf,models,feature_name, model_w2v, sentence):
 
         # model_w2v = Word2Vec.load(model_w2v_file)
-        words = set(tokenizer.tokenize(setence.strip().lower()))
-        tfidf_score = tf.get_tfidf_word_in_sentence(models,feature_name,setence)
+        sentence = pre_process_data(sentence,remove_number_punctuation=True)
+        words = set(tokenizer.tokenize(sentence.strip().lower()))
+        tfidf_score = tf.get_tfidf_word_in_sentence(models,feature_name,sentence)
         words_keys = tfidf_score.keys()
 
         sentence_pre = np.zeros(200)
@@ -66,7 +67,7 @@ class W2V(object):
                 word_pre = w_vec * tf_vec
                 sentence_pre += word_pre
 
-        # sentence_pre = (sentence_pre / max(number_word, 1))
+        sentence_pre = (sentence_pre / max(number_word, 1))
         return sentence_pre
 
     def get_cosine_similary_w2v_tfidf(self, tf,models, feature_name,model_w2v, sentence1, sentence2):
