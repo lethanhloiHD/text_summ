@@ -58,32 +58,25 @@ class DataLoader:
     def convert_indices_to_sentences(self, indices):
 
         def convert_index_to_word(idx):
-
-            idx = idx.data[0]
+            idx = idx.item()
             if idx == 0:
                 return "EOS"
             elif idx == 1:
                 return "UNK"
-            
             search_idx = idx - 2
             if search_idx >= len(self.revmap):
                 return "NA"
-            
             word, idx_ = self.revmap[search_idx]
 
             assert idx_ == idx
             return word
-
         words = [convert_index_to_word(idx) for idx in indices]
-
         return " ".join(words)
 
     def fetch_batch(self, batch_size):
-
         first_index = random.randint(0, len(self.sentences) - batch_size)
         batch = []
         lengths = []
-
         for i in range(first_index, first_index + batch_size):
             sent = self.sentences[i]
             ind = self.convert_sentence_to_indices(sent)

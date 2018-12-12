@@ -19,8 +19,8 @@ class D2V(object):
             for sent in sentences :
                 sent_ = sent.replace("_"," ")
                 tokens = tokenizer.tokenize(sent_)
-                if len(tokens) > 4 :
-                    sent = pre_process_data(sent,remove_number_punctuation=True)
+                if len(tokens) > 3 :
+                    sent = pre_process_text(sent, remove_number_punctuation=True)
                     result.append(sent)
         return result
 
@@ -29,9 +29,9 @@ class D2V(object):
         print("number senteces :", len(data_sentences))
         tagged_data = [TaggedDocument(words=word_tokenize(d.lower()),
                                       tags=[str(i)]) for i, d in enumerate(data_sentences)]
-        max_epochs = 10
+        max_epochs = 100
         alpha = 0.025
-        model = Doc2Vec(vec_size=200,alpha=alpha,min_alpha=0.0025,min_count=2,dm=1)
+        model = Doc2Vec(vec_size=300,alpha=alpha,min_alpha=0.0025,min_count=2,dm=1)
         model.build_vocab(tagged_data)
 
         for epoch in range(max_epochs):
@@ -56,11 +56,12 @@ class D2V(object):
         for t in token_split :
             if len(t) > 1 :
                 tokens.append(t)
-        # tokens = token_split
         vector = model.infer_vector(tokens)
         return vector
 
     def get_cosine_similary(self, model,sentence1, sentence2):
+        # sentence1 = remove_stopwords(sentence1)
+        # sentence2 = remove_stopwords(sentence2)
         vector1 = self.get_vector_sentences(model,sentence1)
         vector2 = self.get_vector_sentences(model,sentence2)
         score = cosine_similarity_vector(vector1,vector2)

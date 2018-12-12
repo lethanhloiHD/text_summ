@@ -55,6 +55,8 @@ class Tfidf(object):
 
 
     def cosine_similarity_tfidf(self,models, sentence1, sentence2):
+        sentence1 = remove_stopwords(sentence1)
+        sentence2 = remove_stopwords(sentence2)
         tfidf_sentence1 = self.get_tfidf_sentence(models,sentence1)
         tfidf_sentence2 = self.get_tfidf_sentence(models,sentence2)
         cosine_score = cosine_similarity(tfidf_sentence1,tfidf_sentence2)

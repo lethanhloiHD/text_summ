@@ -4,10 +4,9 @@ import networkx as nx
 from src.modules.tfidf import *
 from src.modules.word2vec import *
 from src.modules.doc2vec import *
-# from TextGraphics.src.graph import TextGraph
-# import rouge
+from src.modules.autoencoder import *
 from nltk.tokenize import RegexpTokenizer
-from  pyvi import ViTokenizer
+from pyvi import ViTokenizer
 from rouge import Rouge
 
 tokenizer = RegexpTokenizer(r'\w+')
@@ -44,8 +43,11 @@ def mmr_ranking(graph, ranked_sentences,limit_mmr):
     return selected_sentences
 
 
-def build_graph(text, similarityThreshold = 0.001, max_threshold = 1.0,
-                tfidf_option= True, doc2vec_option = False,word2vec_option = False):
+def build_graph(text, similarityThreshold = 0.1, max_threshold = 1.0,
+                tfidf_option= True,
+                doc2vec_option = False,
+                word2vec_option = False,
+                autoencoder_option= False):
     """
     Build graph with representation of sentence with tfidf score
     :param text: data train
@@ -55,17 +57,26 @@ def build_graph(text, similarityThreshold = 0.001, max_threshold = 1.0,
     tf = Tfidf()
     d2v = D2V()
     w2v = W2V()
+    sen2index = {}
     sentences_split = split_sentences(text)
+
     sentences = []
     for sentence in sentences_split :
+        # sentence = remove_stopwords(sentence)
         tokens = tokenizer.tokenize(sentence)
-        if len(tokens) > 2 :
+        if len(tokens) > 4:
             sentences.append(sentence)
-
+            print(sentence)
+    if len(sentences) > 3 :
+        for index, sent in enumerate(sentences):
+            sen2index.update({
+                sent: index
+            })
     print("number sentence ", len(sentences))
     models, feature_names = tf.load_model_featureNames()
     model_d2v = d2v.load_model()
     model_w2v = w2v.load_model()
+    autoencoder, encoder = load_model_encoder()
     graph = nx.Graph()
     graph.add_nodes_from(sentences)
 
@@ -83,29 +94,38 @@ def build_graph(text, similarityThreshold = 0.001, max_threshold = 1.0,
                 if weight_value > similarityThreshold and weight_value < max_threshold:
                     graph.add_edge(node1, node2, weight=weight_value)
 
-    elif word2vec_option :
+    elif word2vec_option:
         for node1 in graph.nodes():
             for node2 in graph.nodes():
                 weight_value = w2v.get_cosine_similary_w2v_tfidf(tf,models,feature_names,model_w2v,node1, node2)
                 if weight_value > similarityThreshold and weight_value < max_threshold:
                     graph.add_edge(node1, node2, weight=weight_value)
-    return  graph
+
+    elif autoencoder_option:
+        for node1 in graph.nodes():
+            for node2 in graph.nodes():
+                weight_value = get_cosine_simi_autoencoder(node1,node2,model_w2v,encoder)
+                if weight_value > similarityThreshold and weight_value < max_threshold:
+                    graph.add_edge(node1, node2, weight=weight_value)
+
+    return  graph, sen2index
 
 def pre_process(text):
     text_token = ViTokenizer.tokenize(text)
-    text_ = pre_process_data(text_token, remove_number_punctuation= False)
+    text_ = pre_process_text(text_token, remove_number_punctuation= False)
     text_ = text_.lower()
     return text_
 
 
 def avg_rouge(data_test, len):
+    result = {}
     rouge_1_f1,rouge_1_p,rouge_1_r,rouge_2_f1,rouge_2_r,rouge_2_p, = 0,0,0,0,0,0
 
     for row in data_test:
         text = row['text']
         summ = row['summ']
         lr = LexRank(text)
-        summ_lexrank =  lr.summary()
+        summ_lexrank,summ_sents =  lr.summary()
         score = lr.evalutor_rouge(summ_lexrank,summ)
         print(score)
         rouge_1_f1 += float(score[0]['rouge-1']['f'])
@@ -114,34 +134,26 @@ def avg_rouge(data_test, len):
         rouge_2_f1 += float(score[0]['rouge-2']['f'])
         rouge_2_p += float(score[0]['rouge-2']['p'])
         rouge_2_r += float(score[0]['rouge-2']['r'])
-
     r1_f1 = float(rouge_1_f1/int(len))
-    print("r1_f1 : ",r1_f1)
     r2_f1 = float(rouge_2_f1/int(len))
-    print("r2_f1 : ",r2_f1)
-
     r1_r = float(rouge_1_r / int(len))
-    print("r1_r : ",r1_r)
     r2_r = float(rouge_2_r / int(len))
-    print("r2_r : ",r2_r )
-
     r1_p = float(rouge_1_p / int(len))
-    print("r1_p : ",r1_p)
     r2_p = float(rouge_2_p / int(len))
-    print("r2_p : ",r2_p)
-
-
-    return r1_f1,r2_f1
+    result.update({"rouge1-f1":r1_f1, "rouge1-r":r1_r, "rouge1-p":r1_p,
+                   "rouge2-f1":r2_f1,"rouge2-r":r2_r,"rouge2-p":r2_p})
+    return result
 
 class LexRank:
-
     def __init__(self, text):
         self.text = pre_process(text)
-        self.graph = build_graph(self.text, tfidf_option=False,
-                                 doc2vec_option= False, word2vec_option=True)
+        self.graph ,self.sent2id = build_graph(self.text,
+                                               tfidf_option=False,
+                                               doc2vec_option= True,
+                                               word2vec_option=False,
+                                               autoencoder_option = False)
 
-
-    def summary(self, limit_pagerank=0.5, limit_mmr = 0.6, number_token = 150):
+    def summary(self, limit_pagerank=0.8, limit_mmr = 0.8, threshold_number_word = 150):
         total_sentences = len(self.graph.nodes())
         n_sentences = int(total_sentences * limit_pagerank)
         print(len(self.graph.nodes()), math.ceil(n_sentences * limit_mmr))
@@ -149,12 +161,26 @@ class LexRank:
         ranked_sentences = sorted(rankings.items(), key= lambda x : x[1] , reverse=True)
 
         summary_sentences = ""
+        summ_sents = {}
         ranked_sentences = ranked_sentences[:n_sentences]
         select_sentences = mmr_ranking(self.graph, ranked_sentences, limit_mmr)
+        total_tokens = 0
         for item in select_sentences :
-            summary_sentences += item[0]+". "
+            tokens = tokenizer.tokenize(item[0].replace("_"," "))
+            num_tokens = len(tokens)
+            total_tokens += num_tokens
 
-        return summary_sentences
+            if total_tokens <= threshold_number_word :
+                selected_sen = item[0]
+                summ_sents.update({
+                    str(selected_sen):self.sent2id[selected_sen]
+                })
+                print("totals tokens :" , total_tokens)
+        summ_sents = sorted(summ_sents.items(), key=operator.itemgetter(1))
+        for selected_sen, index in summ_sents:
+            summary_sentences +=selected_sen +". "
+
+        return summary_sentences , summ_sents
 
 
     def evalutor_rouge(self,summ_lexrank, summ):

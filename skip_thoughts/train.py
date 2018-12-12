@@ -23,7 +23,7 @@ def debug(i, loss, prev, nex, prev_pred, next_pred):
     global last_best_loss
     global current_time
 
-    this_loss = loss.data[0]
+    this_loss = loss.item()
     loss_trail.append(this_loss)
     loss_trail = loss_trail[-20:]
     new_current_time = datetime.utcnow()
@@ -43,7 +43,6 @@ def debug(i, loss, prev, nex, prev_pred, next_pred):
         trail_loss = sum(loss_trail) / len(loss_trail)
         if last_best_loss is None or last_best_loss > trail_loss:
             print("Loss improved from {} to {}".format(last_best_loss, trail_loss))
-
             save_loc = "models/saved_models/skip-best".format(lr, VOCAB_SIZE)
             print("saving model at {}".format(save_loc))
             torch.save(mod.state_dict(), save_loc)
@@ -55,10 +54,9 @@ def debug(i, loss, prev, nex, prev_pred, next_pred):
 
 def train_skipthought():
     print("Starting training...")
-
     # a million iterations
-    for i in range(0, 100):
-        sentences, lengths = data.fetch_batch(8)
+    for i in range(0,10000):
+        sentences, lengths = data.fetch_batch(32)
         loss, prev, nex, prev_pred, next_pred = mod(sentences, lengths)
         debug(i, loss, prev, nex, prev_pred, next_pred)
         optimizer.zero_grad()

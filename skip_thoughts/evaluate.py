@@ -30,7 +30,7 @@ class UsableEncoder:
 
         ret = []
 
-        for chunk in chunks(text, 1):
+        for chunk in chunks(text, 3):
             print("encoding chunk of size {}".format(len(chunk)))
             indices = [self.d.convert_sentence_to_indices(sentence) for sentence in chunk]
             indices = torch.stack(indices)

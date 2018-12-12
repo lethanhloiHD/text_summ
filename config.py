@@ -11,9 +11,15 @@ file_feature_names='models/feature_names.pkl'
 model_d2v_file = 'models/d2v.model'
 model_w2v_file = 'models/w2v.model'
 
+model_autoencoder = 'models/autoencoder.h5'
+# model_autoencoder = 'autoencoder.h5'
+
 stopword_path = 'data/stoplist/stopwords.txt'
 
+noun = ["N","Ny","Np"]
+
 pattern = ['[^-!?,"]+']
+
 mapping = {
     "tp. ":"tp.",
     "mr. ":"mr.",
