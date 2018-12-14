@@ -12,22 +12,22 @@ from keras.layers import Input
 from keras.layers.core import RepeatVector
 from keras.layers.recurrent import LSTM
 from keras.layers.wrappers import Bidirectional
-from keras.models import Model,load_model
+from keras.models import Model, load_model
 from keras.preprocessing import sequence
 from scipy.stats import describe
 import collections
 import numpy as np
 import os
 
-VOCAB_SIZE  = 50000
+VOCAB_SIZE = 50000
 SEQUENCE_LEN = 50
 LATENT_SIZE = 512
-NUM_EPOCHS= 100
+NUM_EPOCHS = 100
 EMBED_SIZE = 300
 BATCH_SIZE = 64
 
-def pre_process_autoencoder(model_w2v):
 
+def pre_process_autoencoder(model_w2v):
     x_train = load_data_train_skipthought(directory_train)
 
     tokenizer = Tokenizer(num_words=VOCAB_SIZE)
@@ -52,28 +52,28 @@ def pre_process_autoencoder(model_w2v):
 
     num_train_steps = len(Xtrain) // BATCH_SIZE
     num_test_steps = len(Xtest) // BATCH_SIZE
-    return train_gen,test_gen,num_train_steps,num_test_steps
+    return train_gen, test_gen, num_train_steps, num_test_steps
 
 
 def sentence_generator(X, embeddings, batch_size):
     while True:
-        num_recs  = X.shape[0]
+        num_recs = X.shape[0]
         indices = np.random.permutation(np.arange(num_recs))
         num_batches = num_recs // batch_size
         for bid in range(num_batches):
-            sids = indices[bid * batch_size : (bid + 1) * batch_size]
+            sids = indices[bid * batch_size: (bid + 1) * batch_size]
             Xbatch = embeddings[X[sids, :]]
             yield Xbatch, Xbatch
 
-def train_model_autoencoder(train_gen,test_gen,num_train_steps,num_test_steps):
 
+def train_model_autoencoder(train_gen, test_gen, num_train_steps, num_test_steps):
     inputs = Input(shape=(SEQUENCE_LEN, EMBED_SIZE), name="input")
     encoded = Bidirectional(LSTM(LATENT_SIZE), merge_mode="sum",
-        name="encoder_lstm")(inputs)
+                            name="encoder_lstm")(inputs)
     decoded = RepeatVector(SEQUENCE_LEN, name="repeater")(encoded)
     decoded = Bidirectional(LSTM(EMBED_SIZE, return_sequences=True),
-        merge_mode="sum",
-        name="decoder_lstm")(decoded)
+                            merge_mode="sum",
+                            name="decoder_lstm")(decoded)
 
     autoencoder = Model(inputs, decoded)
 
@@ -82,20 +82,22 @@ def train_model_autoencoder(train_gen,test_gen,num_train_steps,num_test_steps):
     early_stopping = EarlyStopping(monitor='val_loss', patience=5, mode='min')
     checkpoint = ModelCheckpoint(filepath=model_autoencoder, save_best_only=True)
     autoencoder.fit_generator(train_gen,
-        steps_per_epoch=num_train_steps,
-        epochs=NUM_EPOCHS,
-        validation_data=test_gen,
-        validation_steps=num_test_steps,
-        callbacks=[checkpoint,early_stopping])
+                              steps_per_epoch=num_train_steps,
+                              epochs=NUM_EPOCHS,
+                              validation_data=test_gen,
+                              validation_steps=num_test_steps,
+                              callbacks=[checkpoint, early_stopping])
 
 
-def load_model_encoder ():
+def load_model_encoder():
     autoencoder = load_model(model_autoencoder)
     encoder = Model(autoencoder.input, autoencoder.get_layer("encoder_lstm").output)
     return autoencoder, encoder
 
-def get_vector_sentence(string,model_w2v, encoder) :
 
+def get_vector_sentence(string, model_w2v, encoder , remove_sw = False):
+    if remove_sw :
+        string = remove_stopwords(string)
     tokenizer = Tokenizer(num_words=50)
     tokenizer.fit_on_texts(string)
     sequences_string = tokenizer.texts_to_sequences(string)
@@ -107,42 +109,43 @@ def get_vector_sentence(string,model_w2v, encoder) :
             embedding_vector = model_w2v[word]
             if embedding_vector is not None:
                 string_embedding_matrix[i] = embedding_vector
-    string_gen = sentence_generator(string_seq,string_embedding_matrix,1)
+    string_gen = sentence_generator(string_seq, string_embedding_matrix, 1)
     xtest, ytest = string_gen.__next__()
     vector = encoder.predict(ytest)[0]
     return vector
 
-def get_cosine_simi_autoencoder(string1, string2,model_w2v, encoder):
-    string1 = remove_stopwords(string1)
-    string2 = remove_stopwords(string2)
+
+def get_cosine_simi_autoencoder(string1, string2, model_w2v, encoder, remove_sw = False):
+
     str1 = [string1]
     str2 = [string2]
-    vec1 = get_vector_sentence(str1,model_w2v,encoder)
-    vec2 = get_vector_sentence(str2,model_w2v,encoder)
-    cosine_score = cosine_similarity_vector(vec1,vec2)
+    vec1 = get_vector_sentence(str1, model_w2v, encoder, remove_sw)
+    vec2 = get_vector_sentence(str2, model_w2v, encoder, remove_sw)
+    cosine_score = cosine_similarity_vector(vec1, vec2)
 
     return cosine_score
 
-def evaluate_test(autoencoder, encoder, test_gen,num_test_steps):
+
+def evaluate_test(autoencoder, encoder, test_gen, num_test_steps):
     k = 10
     cosims = np.zeros((k))
     i = 0
     for bid in range(num_test_steps):
         xtest, ytest = test_gen.__next__()
-        print("xtest :",xtest.shape)
-        print("ytest :",ytest.shape)
+        print("xtest :", xtest.shape)
+        print("ytest :", ytest.shape)
         ytest_ = autoencoder.predict(xtest)
-        print("ytest : ",ytest_.shape)
+        print("ytest : ", ytest_.shape)
         Xvec = encoder.predict(ytest)
-        print("Xvec :",Xvec.shape)
+        print("Xvec :", Xvec.shape)
         Yvec = encoder.predict(ytest_)
-        print("Yvec :",Yvec.shape)
+        print("Yvec :", Yvec.shape)
         for rid in range(Xvec.shape[0]):
             if i >= k:
                 break
             cosims[i] = cosine_similarity_vector(Xvec[rid], Yvec[rid])
             if i <= 10:
-                print("cosine ",cosims[i])
+                print("cosine ", cosims[i])
                 i += 1
         if i >= k:
             break

@@ -9,6 +9,7 @@ import numpy as np
 tokenizer = RegexpTokenizer(r'\w+')
 from sklearn.metrics.pairwise import cosine_similarity
 
+dim = 300
 
 class W2V(object):
     def __init__(self):
@@ -27,10 +28,10 @@ class W2V(object):
             result.append(tokens_)
         return result
 
-    def build_model_w2v(self, data_, train_continue=False):
+    def build_model_w2v(self, data_, train_continue = False):
         if not train_continue:
             data = self.pre_process(data_)
-            models = Word2Vec(data, size=300, window=5, workers=4, min_count=2, iter=10, sg=1)
+            models = Word2Vec(data, size=dim, window=5, workers=4, min_count=2, iter=1000, sg=1)
             with open(model_w2v_file, 'wb') as f:
                 pickle.dump(models, f)
 
@@ -47,31 +48,36 @@ class W2V(object):
             model_w2v = pickle.load(f)
         return model_w2v
 
-    def avg_representation_w2v_tfidf(self, tf, models, feature_name, model_w2v, sentence):
-
+    def avg_representation_w2v_tfidf(self, tf, models, feature_name, model_w2v, sentence , remove_sw = False):
+        if remove_sw :
+            sentence = remove_stopwords(sentence)
         sentence = pre_process_text(sentence, remove_number_punctuation=True)
         words = set(tokenizer.tokenize(sentence.strip().lower()))
         tfidf_score = tf.get_tfidf_word_in_sentence(models, feature_name, sentence)
         words_keys = tfidf_score.keys()
 
-        sentence_pre = np.zeros(300)
-        number_word = len(words)
+        sentence_pre = np.zeros(dim)
+        number_word = 0
 
         for word in words:
-            if (word in words_keys) and (word in model_w2v.wv.vocab):
-                w_vec = np.array(model_w2v[word])
-                tf_vec = tfidf_score[word]
-                word_pre = w_vec * tf_vec
-                sentence_pre += word_pre
+            if  (word in model_w2v.wv.vocab):
+                if (word in words_keys) :
+                    w_vec = np.array(model_w2v[word])
+                    tf_vec = tfidf_score[word]
+                    word_pre = w_vec * tf_vec
+                    sentence_pre += word_pre
+                elif word not in words_keys :
+                    w_vec = np.array(model_w2v[word])
+                    sentence_pre += w_vec
+                number_word +=1
 
         sentence_pre = (sentence_pre / max(number_word, 1))
         return sentence_pre
 
-    def get_cosine_similary_w2v_tfidf(self, tf, models, feature_name, model_w2v, sentence1, sentence2):
-        # sentence1 = remove_stopwords(sentence1)
-        # sentence2 = remove_stopwords(sentence2)
-        pre1 = self.avg_representation_w2v_tfidf(tf, models, feature_name, model_w2v, sentence1)
-        pre2 = self.avg_representation_w2v_tfidf(tf, models, feature_name, model_w2v, sentence2)
+    def get_cosine_similary_w2v_tfidf(self, tf, models, feature_name, model_w2v, sentence1, sentence2 , remove_sw = False):
+
+        pre1 = self.avg_representation_w2v_tfidf(tf, models, feature_name, model_w2v, sentence1, remove_sw)
+        pre2 = self.avg_representation_w2v_tfidf(tf, models, feature_name, model_w2v, sentence2, remove_sw)
         score_cosine = cosine_similarity_vector(pre1, pre2)
 
         return score_cosine

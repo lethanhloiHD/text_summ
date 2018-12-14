@@ -1,5 +1,6 @@
 from Util.utility import *
 from pyvi import ViTokenizer,ViPosTagger
+import requests
 
 
 def count_doc_occur_topicWord(data_train,topic_words):
@@ -27,7 +28,7 @@ def count_occur_sentence(setence):
     return topic_words,other_words,number_topicwords_sent
 
 
-def information_significant_score(train_set,original_sentence , ratio = 1.0):
+def information_significant_score(train_set, original_sentence, ratio_reduce_topicWords = 1.0):
     total_doc_train = len(train_set)
     topic_words,other_words, number_topicwords_sent = count_occur_sentence(setence= original_sentence)
     total_topic_words = len(topic_words)
@@ -44,16 +45,18 @@ def information_significant_score(train_set,original_sentence , ratio = 1.0):
         Nd = counts_doc_occur[tw]
         score = float(Ns/ total_topic_words) + float(Nd/total_doc_train)
         info_score.update({ tw : score})
-    info_score = sorted(info_score.items(), key= lambda  x : x[1], reverse= True)[:math.ceil(ratio * total_topic_words)]
+    info_score = sorted(info_score.items(), key= lambda  x : x[1],
+                        reverse= True)[:math.ceil(ratio_reduce_topicWords * total_topic_words)]
 
     for i,v in info_score:
         print(i,v)
     return info_score, other_words
 
 
-def get_topic_word_in_sentence(setence):
+def get_topic_word_in_sentence(sentence):
     topic_words, other_words = [],[]
-    token = list(ViTokenizer.tokenize(setence).split())
+    # token = list(ViTokenizer.tokenize(setence).split())
+    token = list(requests.post(url=url_token, data={"text": sentence}).text.split())
     tokens = " ".join((t for t in token if len(t) > 1))
     token_pos = ViPosTagger.postagging(tokens)
     for i in range(len(token_pos[0])):
@@ -63,6 +66,7 @@ def get_topic_word_in_sentence(setence):
         else :
             other_words.append(token_pos[0][i])
     return topic_words,other_words
+
 
 
 

@@ -50,7 +50,9 @@ class D2V(object):
             model = pickle.load(f)
         return model
 
-    def get_vector_sentences(self,model, sentence ):
+    def get_vector_sentences(self,model, sentence, remove_sw = False):
+        if remove_sw :
+            sentence = remove_stopwords(sentence)
         token_split = tokenizer.tokenize(sentence)
         tokens= []
         for t in token_split :
@@ -59,11 +61,9 @@ class D2V(object):
         vector = model.infer_vector(tokens)
         return vector
 
-    def get_cosine_similary(self, model,sentence1, sentence2):
-        # sentence1 = remove_stopwords(sentence1)
-        # sentence2 = remove_stopwords(sentence2)
-        vector1 = self.get_vector_sentences(model,sentence1)
-        vector2 = self.get_vector_sentences(model,sentence2)
+    def get_cosine_similary(self, model,sentence1, sentence2 , remove_sw = False):
+        vector1 = self.get_vector_sentences(model,sentence1, remove_sw = remove_sw)
+        vector2 = self.get_vector_sentences(model,sentence2 , remove_sw = remove_sw)
         score = cosine_similarity_vector(vector1,vector2)
 
         return score

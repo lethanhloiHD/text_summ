@@ -2,12 +2,28 @@ import csv, os
 import math
 import numpy as np
 # from numpy.linalg import norm
-import re
+import re,json
 import nltk
 from config import *
 from nltk.tokenize import RegexpTokenizer
+import requests
+from nltk import ngrams
 tokenizer = RegexpTokenizer(r'\w+')
 
+def init_token():
+    with open(config_token) as config_buffer:
+        config = json.loads(config_buffer.read())
+    return config['url']
+
+url_token = init_token()
+
+def word_grams(sequence, min=1, max=2):
+    words = sequence.split()
+    results = []
+    for n in range(min, max + 1):
+        for ngram in ngrams(words, n):
+            results.append(' '.join(str(i) for i in ngram))
+    return results
 
 def remove_punctuation(pattern, phrase):
     " remove pattern in phrase "
@@ -22,9 +38,7 @@ def remove_stopwords(setence):
     stopwords = load_stopwords(stopword_path)
     tokens = tokenizer.tokenize(sent)
     tokens_filter_stopwords = [word for word in tokens if word not in stopwords]
-    string = ''
-    for word in tokens_filter_stopwords:
-        string += word + " "
+    string = " ".join(word for word in tokens_filter_stopwords)
     return string
 
 
