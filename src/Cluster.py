@@ -48,7 +48,7 @@ class Cluster(object):
 
     def __init__(self, text, ratio = 0.4 ,
                  tfidf_option=False,
-                 doc2vec_option=False,
+                 doc2vec_option=True,
                  word2vec_option=False,
                  autoencoder_option=False):
 
