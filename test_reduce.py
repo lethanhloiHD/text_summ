@@ -52,9 +52,9 @@ from src.Cluster import *
 # summary = ' '.join([documents[closest[idx]] for idx in ordering])
 #
 # print(summary)
-data_test, len = load_data_test()
-
-avg_rouge_cluster(data_test,len)
+# data_test, len = load_data_test()
+#
+# avg_rouge_cluster(data_test,len)
 
 # text = data_test[0]['text']
 # summ = data_test[0]['summ']
@@ -63,3 +63,7 @@ avg_rouge_cluster(data_test,len)
 # sentences, emb_sentences  = cluster.get_embedding_sentence()
 # summ_cluster = cluster.get_summary(sentences, emb_sentences)
 # cluster.evaluation_rouge(summ_cluster, summ)
+
+
+a = [1,2,4,6]
+print(max(a))

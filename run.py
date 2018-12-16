@@ -8,10 +8,10 @@ import time
 # from skip_thoughts.evaluate import *
 # from skip_thoughts.train import *
 
-data_test, len = load_data_test()
+# data_test, len = load_data_test()
 # print(data_test,len)
-avg_rouge(data_test,len)
-# data = load_data_train(directory_train)
+# avg_rouge(data_test,len)
+data = load_data_train(directory_train)
 # tf= Tfidf()
 # tf.build_model_featureNames(data)
 # print(len(data))
@@ -20,8 +20,8 @@ avg_rouge(data_test,len)
 
 # model = d2v.load_model()
 
-# w2v = W2V()
-# w2v.build_model_w2v(data)
+w2v = W2V()
+w2v.build_model_w2v(data)
 
 
 # text ="""Trong các bữa tiệc của hai nhà hàng ở Hà Nội, cơm và thịt bò là thứ thường bị bỏ lại nhiều.
