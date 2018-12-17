@@ -14,7 +14,7 @@ model_autoencoder = 'models/autoencoder.h5'
 #lda
 save_lda = 'models/save_model_lda/lda_model.pkl'
 save_dictonary_lda = 'models/save_model_lda/lda_dict.pkl'
-NUM_TOPICS = 10
+NUM_TOPICS = 200
 
 
 # file save config

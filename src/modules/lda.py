@@ -3,7 +3,6 @@ from gensim import models
 import pickle
 from Util.utility import *
 
-
 def plMMR_score_pre(document_vector,sentence_vector ) :
     score = 0
     for topic in NUM_TOPICS :
@@ -26,12 +25,12 @@ def plMMR_score(lda,document_vector , candidiate_sentences,summary_set_sentences
     score_m = 0
     sentence_select = candidiate_sentences[0]
     for sentence in candidiate_sentences :
-        sentence_vector_i  = lda.get_vector_text_lda(sentence)
+        sentence_vector_i  = lda.get_vector_lda(sentence)
         score_pre = plMMR_score_pre(document_vector,sentence_vector_i)
         score_afs = []
         if len(summary_set_sentences) > 0 :
             for sent in summary_set_sentences :
-                sentence_vector_j = lda.get_vector_text_lda(sent)
+                sentence_vector_j = lda.get_vector_lda(sent)
                 score_af = plMMR_score_af(document_vector,sentence_vector_i,sentence_vector_j )
                 score_afs.append(score_af)
         score_max  = max(score_afs)
@@ -41,11 +40,11 @@ def plMMR_score(lda,document_vector , candidiate_sentences,summary_set_sentences
     return sentence_select
 
 
-def plMMR(document, candidate_pagerank , limit_sentences):
+def plMMR(document, candidate_ranked , limit_sentences):
     lda = LDA()
-    document_vector = lda.get_vector_text_lda(document)
-    summay_set_sentences = candidate_pagerank[0]
-    candidates = candidate_pagerank[1:]
+    document_vector = lda.get_vector_lda(document)
+    summay_set_sentences = candidate_ranked[0]
+    candidates = candidate_ranked[1:]
 
     while len(summay_set_sentences) < limit_sentences :
         sentence_select = plMMR_score(lda,document_vector,candidates,summay_set_sentences)
@@ -54,12 +53,14 @@ def plMMR(document, candidate_pagerank , limit_sentences):
 
     return summay_set_sentences
 
-def pre_process_lad(data_train):
+
+def pre_process_lda(data_train):
     stoplist = load_stopwords(stopword_path)
     text_data = []
     for document in data_train :
-        docs =[word for word in  document.lower().split()
-               if (word not in stoplist and len(word) > 3)]
+        doc = document.lower().strip()
+        words = tokenizer.tokenize(doc)
+        docs =[word for word in  words if (word not in stoplist and len(word) > 3)]
         text_data.append(docs)
 
     dictionary = Dictionary(text_data)
@@ -83,13 +84,14 @@ class LDA(object):
         return model_lda , dictionary_lda
 
     def build_model_lda(self, data_train):
-        corpus, self.dictionary_lda = pre_process_lad(data_train)
+        corpus, self.dictionary_lda = pre_process_lda(data_train)
         self.model_lda = models.ldamodel.LdaModel(corpus = corpus,
                                                   id2word=self.dictionary_lda,
                                                   num_topics=NUM_TOPICS,
                                                   alpha='auto',
                                                   per_word_topics=True,
                                                   )
+
         topics = self.model_lda.print_topics(num_words=4)
         for topic in topics[:5]:
             print(topic)
@@ -99,9 +101,11 @@ class LDA(object):
             pickle.dump(self.dictionary_lda, f)
         return self.model_lda, self.dictionary_lda
 
-    def get_vector_text_lda(self,text):
-        text = [text.lower().strip()]
-        bow = self.dictionary_lda.doc2bow(text)
+    def get_vector_lda(self, text):
+        text = text.lower().strip()
+        text = requests.post(url=url_token, data={"text": text}).text
+        text_ = [text]
+        bow = self.dictionary_lda.doc2bow(text_)
         vector = self.model_lda.get_document_topics(bow)
         print("get_document_topics", vector)
         topic_score = {}

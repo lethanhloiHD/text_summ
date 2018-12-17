@@ -8,13 +8,13 @@ import time
 from src.modules.lda import *
 
 
-data = load_data_train(directory_train)[:10]
+# data = load_data_train(directory_train)
 
 # corpus, dic = pre_process_lad(data)
 
 lda = LDA()
-lda.build_model_lda(data)
+# lda.build_model_lda(data)
 
-model_lda = lda.load_model_lda()
+# model_lda , dictionary_lda = lda.load_model_lda()
 
-lda.get_vector_text_lda("viet nam vo dich")
+lda.get_vector_lda("Samsumg ket hop voi Nokia")

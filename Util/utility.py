@@ -10,12 +10,12 @@ import requests
 from nltk import ngrams
 tokenizer = RegexpTokenizer(r'\w+')
 
-def init_token():
+def init_tokenizer():
     with open(config_token) as config_buffer:
         config = json.loads(config_buffer.read())
     return config['url']
 
-url_token = init_token()
+url_token = init_tokenizer()
 
 def word_grams(sequence, min=1, max=2):
     words = sequence.split()
@@ -78,13 +78,21 @@ def cosine_similarity_vector(vector1,vector2):
 
 
 def score_position_sentence(total_sentences, position ):
-    if total_sentences > 8:
-        if position == 0 or position == (total_sentences-1) :
-            return 1
-        else :
-            return float(position/ int(total_sentences*0.5))
+
+    if total_sentences > 1 :
+        pos = float(position/total_sentences)
+        if 0 < pos <= 0.1 : return 0.17
+        elif pos <= 0.2 : return 0.23
+        elif pos <= 0.3 : return 0.14
+        elif pos <= 0.4 : return 0.08
+        elif pos <= 0.5 : return 0.05
+        elif pos <= 0.6 : return 0.04
+        elif pos <= 0.7 : return 0.06
+        elif pos <= 0.8 : return 0.04
+        elif pos <= 0.9 : return 0.04
+        elif pos <= 1.0: return 0.15
     else :
-        return 1
+        return 0
 
 def load_stopwords(stoppath):
     stop_words = []

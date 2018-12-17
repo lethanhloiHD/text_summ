@@ -31,7 +31,7 @@ class W2V(object):
     def build_model_w2v(self, data_, train_continue = False):
         if not train_continue:
             data = self.pre_process(data_)
-            models = Word2Vec(data, size=dim, window=5, workers=4, min_count=2, iter=1000, sg=1)
+            models = Word2Vec(data, size=dim, window=5, workers=4, min_count=2, iter=100, sg=1)
             with open(model_w2v_file, 'wb') as f:
                 pickle.dump(models, f)
 

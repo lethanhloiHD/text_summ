@@ -6,7 +6,7 @@ from src.modules.doc2vec import *
 from src.modules.autoencoder import *
 from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances_argmin_min
-
+from src.modules.lda import *
 
 def pre_process_cluster(text):
     text_token = requests.post(url=url_token, data={"text": text}).text
@@ -46,7 +46,7 @@ def avg_rouge_cluster(data_test, len):
 
 class Cluster(object):
 
-    def __init__(self, text, ratio = 0.4 ,
+    def __init__(self, text, ratio = 0.5 ,
                  tfidf_option=False,
                  doc2vec_option=True,
                  word2vec_option=False,
@@ -101,7 +101,7 @@ class Cluster(object):
 
         return sentences, embedding_sentences
 
-    def get_summary(self,):
+    def get_summary(self,plmmr_option = False):
         num_cluster = int(math.ceil(self.ratio_cluster * len(self.sentences)))
         kmeans = KMeans(n_clusters=num_cluster, init='k-means++', max_iter=300, n_init=10, random_state=0)
         kmeans.fit(self.embedding_sentences)
@@ -114,8 +114,11 @@ class Cluster(object):
         ordering = sorted(range(num_cluster), key=lambda k: avg[k])
         index = [closest[idx] for idx in ordering]
         index.sort(reverse=False)
-        summary = ' '.join([self.sentences[idx] for idx in index])
-
+        summary_sentences = [self.sentences[idx] for idx in index]
+        if plmmr_option :
+            sents = plMMR(self.text,summary_sentences,limit_sentences= 0.4 * len(summary_sentences))
+            summary_sentences = sents
+        summary = ' '.join(sent for sent in summary_sentences)
         return summary
 
     def evaluation_rouge(self, summay_cluster, summ):

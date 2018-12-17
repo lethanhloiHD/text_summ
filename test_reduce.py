@@ -63,7 +63,3 @@ from src.Cluster import *
 # sentences, emb_sentences  = cluster.get_embedding_sentence()
 # summ_cluster = cluster.get_summary(sentences, emb_sentences)
 # cluster.evaluation_rouge(summ_cluster, summ)
-
-
-a = [1,2,4,6]
-print(max(a))

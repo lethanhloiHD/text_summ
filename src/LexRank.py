@@ -9,6 +9,7 @@ from nltk.tokenize import RegexpTokenizer
 from pyvi import ViTokenizer
 from rouge import Rouge
 import requests
+from src.modules.lda import *
 
 tokenizer = RegexpTokenizer(r'\w+')
 
@@ -153,7 +154,8 @@ def avg_rouge(data_test, len):
 
 class LexRank(object):
 
-    def __init__(self, text, tfidf_option=False,
+    def __init__(self, text,
+                 tfidf_option=False,
                  doc2vec_option=True,
                  word2vec_option=False,
                  autoencoder_option=True):
@@ -165,30 +167,53 @@ class LexRank(object):
                                                word2vec_option=word2vec_option,
                                                autoencoder_option=autoencoder_option)
 
-    def summary(self, limit_pagerank=0.8, limit_mmr=0.8, threshold_number_word=150):
+    def summary(self, limit_pagerank=0.8,
+                limit_mmr=0.8,
+                threshold_number_word=150,
+                using_postion_score = False,
+                option_mmr = True,
+                option_plmmr = False):
+
         summ_sents = {}
         summary_sentences = ""
         total_sentences = len(self.graph.nodes())
-        if total_sentences > 0:
+        if total_sentences > 2:
+            select_sentences = []
             n_sentences = int(total_sentences * limit_pagerank)
             print(len(self.graph.nodes()), math.ceil(n_sentences * limit_mmr))
             rankings = nx.pagerank(self.graph, alpha=0.85)
-            ranked_sentences = sorted(rankings.items(), key=lambda x: x[1], reverse=True)
+            print("rankings : ", rankings)
 
-            ranked_sentences = ranked_sentences[:n_sentences]
-            select_sentences = mmr_ranking(self.graph, ranked_sentences, limit_mmr)
-            total_tokens = 0
-            for item in select_sentences:
-                tokens = tokenizer.tokenize(item[0].replace("_", " "))
-                num_tokens = len(tokens)
-                total_tokens += num_tokens
-
-                if total_tokens <= threshold_number_word:
-                    selected_sen = item[0]
-                    summ_sents.update({
-                        str(selected_sen): self.sent2id[selected_sen]
+            """"" Using score position combine with score pagerank for ranking sentence in document """
+            if using_postion_score :
+                for sent , score_pr in rankings.items():
+                    score_position = float(score_position_sentence(total_sentences, self.sent2id[sent]))
+                    score_final = 0.7 * score_pr + 0.3* score_position
+                    rankings.update({
+                        sent , score_final
                     })
-                    print("totals tokens :", total_tokens)
+            ranked_sentences = sorted(rankings.items(), key=lambda x: x[1], reverse=True)
+            ranked_sentences = ranked_sentences[:n_sentences]
+            print("ranking_sentences : ", ranked_sentences)
+            if option_mmr :
+                select_sentences = mmr_ranking(self.graph, ranked_sentences, limit_mmr)
+            elif option_plmmr :
+                candidate_ranked = [sent[0] for sent in ranked_sentences]
+                select_sentences = plMMR(self.text,candidate_ranked,math.ceil(n_sentences * limit_mmr))
+            total_tokens = 0
+            if len(select_sentences) > 0 :
+                for item in select_sentences:
+                    # tokens = tokenizer.tokenize(item[0].replace("_", " "))
+                    tokens = tokenizer.tokenize(item[0])
+                    num_tokens = len(tokens)
+                    total_tokens += num_tokens
+
+                    if total_tokens <= threshold_number_word:
+                        selected_sen = item[0]
+                        summ_sents.update({
+                            str(selected_sen): self.sent2id[selected_sen]
+                        })
+                        print("totals tokens :", total_tokens)
             summ_sents = sorted(summ_sents.items(), key=operator.itemgetter(1))
 
             summary_sentences = ". ".join(sent[0] for sent in summ_sents)
