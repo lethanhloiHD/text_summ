@@ -135,16 +135,14 @@ def load_data_test():
     content = []
     with open(file_data_test, encoding='utf-8') as file_:
         reader = csv.DictReader(file_)
-        lenght_row = 0
         for row in reader:
-            cont = row['Full text']
+            cont = row['Title']+". "+row['Full text']
             summ = row['Summary (< 150 syllable)']
             content.append({
                 "text": cont,
                 "summ":summ
             })
-            lenght_row +=1
-    return content,lenght_row
+    return content
 
 
 def load_data_train_skipthought(directory_train):

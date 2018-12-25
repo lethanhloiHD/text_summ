@@ -1,4 +1,4 @@
-from src.LexRank import *
+from src.Graph_base import *
 from src.modules.doc2vec import *
 import nltk
 import  numpy as np

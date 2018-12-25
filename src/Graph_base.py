@@ -48,10 +48,10 @@ def mmr_ranking(graph, ranked_sentences, limit_mmr):
 
 
 def build_graph(text, similarityThreshold=0.1, max_threshold=1.0,
-                tfidf_option=True,
+                tfidf_option=False,
                 doc2vec_option=False,
                 word2vec_option=False,
-                autoencoder_option=False):
+                autoencoder_option=True):
     """
     Build graph with representation of sentence with tfidf score
     :param text: data train
@@ -66,18 +66,17 @@ def build_graph(text, similarityThreshold=0.1, max_threshold=1.0,
     sentences_split = split_sentences(text)
 
     sentences = []
-    for sentence in sentences_split:
-        # sentence = remove_stopwords(sentence)
+    for index, sentence in enumerate(sentences_split):
         tokens = tokenizer.tokenize(sentence)
         if len(tokens) > 3:
             sentences.append(sentence)
             print(sentence)
-    if len(sentences) > 3:
-        for index, sent in enumerate(sentences):
             sen2index.update({
-                sent: index
+                str(sentence): index
             })
-        print("number sentence ", len(sentences))
+    print("number sentence ", len(sentences))
+
+    if len(sentences) > 2:
         models, feature_names = tf.load_model_featureNames()
         model_d2v = d2v.load_model()
         model_w2v = w2v.load_model()
@@ -109,9 +108,13 @@ def build_graph(text, similarityThreshold=0.1, max_threshold=1.0,
         elif autoencoder_option:
             for node1 in graph.nodes():
                 for node2 in graph.nodes():
-                    weight_value = get_cosine_simi_autoencoder(node1, node2, model_w2v, encoder)
-                    if similarityThreshold < weight_value < max_threshold:
-                        graph.add_edge(node1, node2, weight=weight_value)
+                    try :
+                        weight_value = get_cosine_simi_autoencoder(node1, node2, model_w2v, encoder)
+                        if similarityThreshold < weight_value < max_threshold:
+                            graph.add_edge(node1, node2, weight=weight_value)
+                    except :
+                        print(" cannot cacl similar sentence ")
+
 
     return graph, sen2index
 
@@ -123,26 +126,30 @@ def pre_process(text):
     return text_
 
 
-def avg_rouge(data_test, len):
+def avg_rouge(data_test):
+    len = 0
     result = {}
     rouge_1_f1, rouge_1_p, rouge_1_r, rouge_2_f1, rouge_2_r, rouge_2_p, = 0, 0, 0, 0, 0, 0
 
     for row in data_test:
         text, summ = row['text'], row['summ']
-        lr = LexRank(text)
-        summ_lexrank, summ_sents = lr.summary()
-        score = lr.evaluation_rouge(summ_lexrank, summ)
-        print(score)
-        rouge_1_f1 += float(score[0]['rouge-1']['f'])
-        rouge_1_p += float(score[0]['rouge-1']['p'])
-        rouge_1_r += float(score[0]['rouge-1']['r'])
-        rouge_2_f1 += float(score[0]['rouge-2']['f'])
-        rouge_2_p += float(score[0]['rouge-2']['p'])
-        rouge_2_r += float(score[0]['rouge-2']['r'])
+        lr = Rank(text)
+        try :
+            summ_lexrank, summ_sents = lr.summary()
+            score = lr.evaluation_rouge(summ_lexrank, summ)
+            print(score)
+            rouge_1_f1 += float(score[0]['rouge-1']['f'])
+            rouge_1_p += float(score[0]['rouge-1']['p'])
+            rouge_1_r += float(score[0]['rouge-1']['r'])
+            rouge_2_f1 += float(score[0]['rouge-2']['f'])
+            rouge_2_p += float(score[0]['rouge-2']['p'])
+            rouge_2_r += float(score[0]['rouge-2']['r'])
+            len +=1
+        except :
+            print("cannot calc score !")
+
     r1_f1, r2_f1, r1_r, r2_r, r1_p, r2_p = float(rouge_1_f1 / int(len)), float(rouge_2_f1 / int(len)), float(
-        rouge_1_r / int(len)), \
-                                           float(rouge_2_r / int(len)), float(rouge_1_p / int(len)), float(
-        rouge_2_p / int(len))
+        rouge_1_r / int(len)), float(rouge_2_r / int(len)), float(rouge_1_p / int(len)), float(rouge_2_p / int(len))
 
     result.update({"rouge1-f1": r1_f1, "rouge1-r": r1_r, "rouge1-p": r1_p,
                    "rouge2-f1": r2_f1, "rouge2-r": r2_r, "rouge2-p": r2_p})
@@ -152,14 +159,15 @@ def avg_rouge(data_test, len):
     return result
 
 
-class LexRank(object):
+class Rank(object):
 
     def __init__(self, text,
                  tfidf_option=False,
-                 doc2vec_option=True,
+                 doc2vec_option=False,
                  word2vec_option=False,
-                 autoencoder_option=True):
-
+                 autoencoder_option =True):
+        if not tfidf_option and not doc2vec_option and not word2vec_option and not autoencoder_option :
+            tfidf_option = True
         self.text = pre_process(text)
         self.graph, self.sent2id = build_graph(self.text,
                                                tfidf_option=tfidf_option,
@@ -167,57 +175,63 @@ class LexRank(object):
                                                word2vec_option=word2vec_option,
                                                autoencoder_option=autoencoder_option)
 
-    def summary(self, limit_pagerank=0.8,
+    def summary(self, limit_pagerank = 0.8,
                 limit_mmr=0.8,
                 threshold_number_word=150,
-                using_postion_score = False,
-                option_mmr = True,
-                option_plmmr = False):
+                using_postion_score = True,
+                option_mmr=True,
+                option_plmmr=False):
 
         summ_sents = {}
         summary_sentences = ""
         total_sentences = len(self.graph.nodes())
         if total_sentences > 2:
-            select_sentences = []
             n_sentences = int(total_sentences * limit_pagerank)
             print(len(self.graph.nodes()), math.ceil(n_sentences * limit_mmr))
-            rankings = nx.pagerank(self.graph, alpha=0.85)
+            rankings = nx.pagerank(self.graph, alpha = 0.7)
             print("rankings : ", rankings)
-
             """"" Using score position combine with score pagerank for ranking sentence in document """
-            if using_postion_score :
-                for sent , score_pr in rankings.items():
+            if using_postion_score:
+                for sent, score_pr in rankings.items():
                     score_position = float(score_position_sentence(total_sentences, self.sent2id[sent]))
-                    score_final = 0.7 * score_pr + 0.3* score_position
+                    score_final = 0.8 * score_pr + 0.2 * score_position
                     rankings.update({
-                        sent , score_final
+                        sent: score_final
                     })
             ranked_sentences = sorted(rankings.items(), key=lambda x: x[1], reverse=True)
             ranked_sentences = ranked_sentences[:n_sentences]
             print("ranking_sentences : ", ranked_sentences)
-            if option_mmr :
-                select_sentences = mmr_ranking(self.graph, ranked_sentences, limit_mmr)
-            elif option_plmmr :
+            if option_mmr:
+                select_sents = mmr_ranking(self.graph, ranked_sentences, limit_mmr)
+                select_sentences = [sent[0] for sent in select_sents]
+
+            elif option_plmmr:
                 candidate_ranked = [sent[0] for sent in ranked_sentences]
-                select_sentences = plMMR(self.text,candidate_ranked,math.ceil(n_sentences * limit_mmr))
+                print("candidate_ranked plmmr", candidate_ranked)
+                select_sentences = plMMR(self.text, candidate_ranked, math.ceil(n_sentences * limit_mmr))
+            else:
+                select_sentences = [sent[0] for sent in ranked_sentences]
             total_tokens = 0
-            if len(select_sentences) > 0 :
+            print("select_sentences ", select_sentences)
+
+            if len(select_sentences) > 0:
                 for item in select_sentences:
                     # tokens = tokenizer.tokenize(item[0].replace("_", " "))
-                    tokens = tokenizer.tokenize(item[0])
+                    tokens = tokenizer.tokenize(item)
                     num_tokens = len(tokens)
                     total_tokens += num_tokens
 
                     if total_tokens <= threshold_number_word:
-                        selected_sen = item[0]
+                        selected_sen = item
+                        print("item", item)
                         summ_sents.update({
                             str(selected_sen): self.sent2id[selected_sen]
                         })
                         print("totals tokens :", total_tokens)
             summ_sents = sorted(summ_sents.items(), key=operator.itemgetter(1))
 
-            summary_sentences = ". ".join(sent[0] for sent in summ_sents)
-
+            summary_sentences = " ".join(sent[0] for sent in summ_sents)
+            print("summary sentences : ", summary_sentences)
         return summary_sentences, summ_sents
 
     def evaluation_rouge(self, summ_lexrank, summ):

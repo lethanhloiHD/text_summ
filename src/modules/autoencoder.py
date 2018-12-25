@@ -96,9 +96,10 @@ def load_model_encoder():
 
 
 def get_vector_sentence(string, model_w2v, encoder , remove_sw = False):
+    string = [string]
     if remove_sw :
         string = remove_stopwords(string)
-    tokenizer = Tokenizer(num_words=50)
+    tokenizer = Tokenizer(num_words=SEQUENCE_LEN)
     tokenizer.fit_on_texts(string)
     sequences_string = tokenizer.texts_to_sequences(string)
     string_seq = pad_sequences(sequences_string, maxlen=SEQUENCE_LEN)
@@ -108,7 +109,10 @@ def get_vector_sentence(string, model_w2v, encoder , remove_sw = False):
         if word in model_w2v:
             embedding_vector = model_w2v[word]
             if embedding_vector is not None:
+                # try :
                 string_embedding_matrix[i] = embedding_vector
+                # except :
+                #     print("index out of axis")
     string_gen = sentence_generator(string_seq, string_embedding_matrix, 1)
     xtest, ytest = string_gen.__next__()
     vector = encoder.predict(ytest)[0]
@@ -117,10 +121,8 @@ def get_vector_sentence(string, model_w2v, encoder , remove_sw = False):
 
 def get_cosine_simi_autoencoder(string1, string2, model_w2v, encoder, remove_sw = False):
 
-    str1 = [string1]
-    str2 = [string2]
-    vec1 = get_vector_sentence(str1, model_w2v, encoder, remove_sw)
-    vec2 = get_vector_sentence(str2, model_w2v, encoder, remove_sw)
+    vec1 = get_vector_sentence(string1, model_w2v, encoder, remove_sw)
+    vec2 = get_vector_sentence(string2, model_w2v, encoder, remove_sw)
     cosine_score = cosine_similarity_vector(vec1, vec2)
 
     return cosine_score
