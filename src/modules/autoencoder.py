@@ -68,12 +68,9 @@ def sentence_generator(X, embeddings, batch_size):
 
 def train_model_autoencoder(train_gen, test_gen, num_train_steps, num_test_steps):
     inputs = Input(shape=(SEQUENCE_LEN, EMBED_SIZE), name="input")
-    encoded = Bidirectional(LSTM(LATENT_SIZE), merge_mode="sum",
-                            name="encoder_lstm")(inputs)
+    encoded = LSTM(LATENT_SIZE,name="encoder_lstm")(inputs)
     decoded = RepeatVector(SEQUENCE_LEN, name="repeater")(encoded)
-    decoded = Bidirectional(LSTM(EMBED_SIZE, return_sequences=True),
-                            merge_mode="sum",
-                            name="decoder_lstm")(decoded)
+    decoded = LSTM(EMBED_SIZE, return_sequences=True)(decoded)
 
     autoencoder = Model(inputs, decoded)
 
@@ -120,7 +117,6 @@ def get_vector_sentence(string, model_w2v, encoder , remove_sw = False):
 
 
 def get_cosine_simi_autoencoder(string1, string2, model_w2v, encoder, remove_sw = False):
-
     vec1 = get_vector_sentence(string1, model_w2v, encoder, remove_sw)
     vec2 = get_vector_sentence(string2, model_w2v, encoder, remove_sw)
     cosine_score = cosine_similarity_vector(vec1, vec2)

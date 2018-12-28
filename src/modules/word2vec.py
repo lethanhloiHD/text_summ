@@ -31,7 +31,7 @@ class W2V(object):
     def build_model_w2v(self, data_, train_continue = False):
         if not train_continue:
             data = self.pre_process(data_)
-            models = Word2Vec(data, size=dim, window=5, workers=4, min_count=2, iter=100, sg=1)
+            models = Word2Vec(data, size=dim, window=5, workers=4, min_count=2, iter=10, sg=1)
             with open(model_w2v_file, 'wb') as f:
                 pickle.dump(models, f)
 
@@ -65,6 +65,7 @@ class W2V(object):
                     w_vec = np.array(model_w2v[word])
                     tf_vec = tfidf_score[word]
                     word_pre = w_vec * tf_vec
+                    # word_pre = w_vec
                     sentence_pre += word_pre
                 elif word not in words_keys :
                     w_vec = np.array(model_w2v[word])

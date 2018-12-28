@@ -70,7 +70,7 @@ def build_graph(text, similarityThreshold=0.1, max_threshold=1.0,
         tokens = tokenizer.tokenize(sentence)
         if len(tokens) > 3:
             sentences.append(sentence)
-            print(sentence)
+            # print(sentence)
             sen2index.update({
                 str(sentence): index
             })
@@ -176,7 +176,7 @@ class Rank(object):
                                                autoencoder_option=autoencoder_option)
 
     def summary(self, limit_pagerank = 0.8,
-                limit_mmr=0.8,
+                limit_mmr=1.0,
                 threshold_number_word=150,
                 using_postion_score = True,
                 option_mmr=True,
@@ -187,7 +187,7 @@ class Rank(object):
         total_sentences = len(self.graph.nodes())
         if total_sentences > 2:
             n_sentences = int(total_sentences * limit_pagerank)
-            print(len(self.graph.nodes()), math.ceil(n_sentences * limit_mmr))
+            print(len(self.graph.nodes()))
             rankings = nx.pagerank(self.graph, alpha = 0.7)
             print("rankings : ", rankings)
             """"" Using score position combine with score pagerank for ranking sentence in document """
@@ -207,12 +207,12 @@ class Rank(object):
 
             elif option_plmmr:
                 candidate_ranked = [sent[0] for sent in ranked_sentences]
-                print("candidate_ranked plmmr", candidate_ranked)
+                # print("candidate_ranked plmmr", candidate_ranked)
                 select_sentences = plMMR(self.text, candidate_ranked, math.ceil(n_sentences * limit_mmr))
             else:
                 select_sentences = [sent[0] for sent in ranked_sentences]
             total_tokens = 0
-            print("select_sentences ", select_sentences)
+            # print("select_sentences ", select_sentences)
 
             if len(select_sentences) > 0:
                 for item in select_sentences:
@@ -228,8 +228,9 @@ class Rank(object):
                             str(selected_sen): self.sent2id[selected_sen]
                         })
                         print("totals tokens :", total_tokens)
-            summ_sents = sorted(summ_sents.items(), key=operator.itemgetter(1))
 
+            summ_sents = sorted(summ_sents.items(), key=operator.itemgetter(1))
+            print("lenght sum :", len(summ_sents))
             summary_sentences = " ".join(sent[0] for sent in summ_sents)
             print("summary sentences : ", summary_sentences)
         return summary_sentences, summ_sents

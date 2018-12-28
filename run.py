@@ -8,17 +8,17 @@ import time
 # from skip_thoughts.evaluate import *
 # from skip_thoughts.train import *
 
-data_test= load_data_test()
-avg_rouge(data_test)
+# data_test= load_data_test()
+# avg_rouge(data_test)
 # data = load_data_train(directory_train)
-# tf= Tfidf()
-# tf.build_model_featureNames(data)
-# print(len(data))
+# # # tf= Tfidf()
+# # # tf.build_model_featureNames(data)
+# # # print(len(data))
 # d2v = D2V()
 # d2v.build_model(data)
-#
-# model = d2v.load_model()
-#
+# # #
+# # # model = d2v.load_model()
+# # #
 # w2v = W2V()
 # w2v.build_model_w2v(data)
 
@@ -30,24 +30,22 @@ avg_rouge(data_test)
 # Hiện 38 khách sạn thuộc AccorHotels trong khu vực, trong đó có 6 khách sạn tại Việt Nam đã cắt giảm lượng lớn chất thải thực phẩm nhờ áp dụng công nghệ mới này."""
 #
 # summ = """Trong các bữa tiệc của hai nhà hàng (thuộc khách sạn Sofitel Legend Metropole Hà Nội), cơm và thịt bò là thứ thường bị bỏ lại nhiều nhất. Đó là kết quả sau một năm rưỡi áp dụng công nghệ Winnow giúp các đầu bếp đo lường, kiểm tra và cắt giảm thực phẩm dư thừa. Các đầu bếp sử dụng kết quả phân tích để cắt giảm thực phẩm hay bị thừa, hạn chế việc chế biến quá nhiều thức ăn. Sau một năm rưỡi, hai nhà hàng trên tiết kiệm được 11,2 tấn thức ăn, giúp tiết kiệm hơn 1 tỷ đồng. Hiện 38 khách sạn thuộc AccorHotels trong khu vực, trong đó có 6 khách sạn tại Việt Nam đã cắt giảm lượng lớn chất thải thực phẩm nhờ áp dụng công nghệ này."""
-# # data_test, len = load_data_test()
-# # text = data_test[0]['text']
-# # summ = data_test[0]['summ']
-# lexrank = LexRank(text, tfidf_option=True,
-#                   doc2vec_option=False,
-#                   word2vec_option=False,
-#                   autoencoder_option=False
-#                   )
-# sum_lexrank, summ_sents = \
-#     lexrank.summary(option_mmr=True,
-#                     option_plmmr=False,
-#                     using_postion_score= True)
-#
-# print(summ)
-# for i,n in summ_sents:
-#     print(i,n)
-#
-# print(lexrank.evaluation_rouge(sum_lexrank,summ))
+data_test= load_data_test()
+
+text = data_test[0]['text']
+summ = data_test[0]['summ']
+lexrank = Rank(text,
+                    tfidf_option=False,
+                    doc2vec_option=False,
+                      word2vec_option=False,
+                      autoencoder_option=True
+                      )
+sum_lexrank, summ_sents = \
+        lexrank.summary(option_mmr=True,
+
+                        using_postion_score= True)
+
+print(lexrank.evaluation_rouge(sum_lexrank,summ))
 
 
 

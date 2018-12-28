@@ -53,11 +53,11 @@ def avg_rouge_cluster(data_test):
 class Cluster(object):
 
     def __init__(self, text,
-                 ratio = 0.5,
+                 ratio = 0.4,
                  tfidf_option=False,
                  doc2vec_option=False,
-                 word2vec_option=False,
-                 autoencoder_option=True):
+                 word2vec_option=True,
+                 autoencoder_option=False):
 
         self.text = pre_process_cluster(text)
         self.sentences, self.embedding_sentences = self.get_embedding_sentence(tfidf_option=tfidf_option,
@@ -120,11 +120,15 @@ class Cluster(object):
         for i in range(num_cluster):
             idx = np.where(kmeans.labels_ == i)[0]
             avg.append(np.mean(idx))
+            print(idx)
 
         closest, _ = pairwise_distances_argmin_min(kmeans.cluster_centers_, self.embedding_sentences)
+        print(closest)
         ordering = sorted(range(num_cluster), key=lambda k: avg[k])
+        print("ordering ",ordering)
         index = [closest[idx] for idx in ordering]
         index.sort(reverse=False)
+        print(index)
         summary_sentences = [self.sentences[idx] for idx in index]
         if plmmr_option :
             limit = math.ceil(limit_plmmr * len(summary_sentences))
@@ -132,7 +136,9 @@ class Cluster(object):
             summary_sentences = sents
         for sent in summary_sentences :
             print("summary",sent)
+
         summary = ' '.join(sent for sent in summary_sentences)
+        print(summary)
         return summary
 
     def evaluation_rouge(self, summay_cluster, summ):

@@ -29,9 +29,9 @@ class D2V(object):
         print("number senteces :", len(data_sentences))
         tagged_data = [TaggedDocument(words=word_tokenize(d.lower()),
                                       tags=[str(i)]) for i, d in enumerate(data_sentences)]
-        max_epochs = 100
+        max_epochs = 10
         alpha = 0.025
-        model = Doc2Vec(vec_size=300,alpha=alpha,min_alpha=0.0025,min_count=2,dm=1)
+        model = Doc2Vec(vec_size=300,alpha=alpha,min_alpha=0.025,min_count=2,dm=1)
         model.build_vocab(tagged_data)
 
         for epoch in range(max_epochs):
