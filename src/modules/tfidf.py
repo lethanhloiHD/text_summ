@@ -61,7 +61,6 @@ class Tfidf(object):
             # print(w,s)
         return result
 
-
     def cosine_similarity_tfidf(self,models, sentence1, sentence2, remove_sw = False):
 
         tfidf_sentence1 = self.get_tfidf_sentence(models,sentence1, remove_sw)

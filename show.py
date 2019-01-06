@@ -9,17 +9,6 @@ from src.modules.lda import *
 import matplotlib.pyplot as plt
 import numpy as np
 
-# data = load_data_train(directory_train)
-# #
-# # corpus, dic = pre_process_lda(data)
-# #
-# lda = LDA()
-# lda.build_model_lda(data)
-
-# model_lda , dictionary_lda = lda.load_model_lda()
-#
-# lda.get_vector_lda("Samsung sắp đưa tân b Galaxy A6s ra thị trường: mặt lưng bóng bẩy, dùng màn LCD 6 inch, vị trí đặt cảm biến vân tay hơi cao")
-# lda.get_vector_lda("Thoạt nhìn, vị trí cảm biến vân tay gần như ngang bằng với cụm camera sau, do đó thao tác mở máy có thể sẽ gặp khó khăn với những người tay ngắn")
 
 x = [10,20,30,40,50]
 tfidf = [0.2286,0.2521,0.2458,0.2438,0.2315]
@@ -39,3 +28,4 @@ plt.title("Text Summarization")
 plt.legend()
 
 plt.show()
+

@@ -6,3 +6,7 @@ scipy
 pyvi
 networkx
 matplotlib
+keras
+tensorflow
+rouge
+flask

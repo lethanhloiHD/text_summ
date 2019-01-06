@@ -64,13 +64,12 @@ def build_graph(text, similarityThreshold=0.1, max_threshold=1.0,
     graph = nx.Graph()
     sen2index = {}
     sentences_split = split_sentences(text)
-
     sentences = []
     for index, sentence in enumerate(sentences_split):
         tokens = tokenizer.tokenize(sentence)
         if len(tokens) > 3:
             sentences.append(sentence)
-            # print(sentence)
+            print(sentence)
             sen2index.update({
                 str(sentence): index
             })
@@ -169,6 +168,7 @@ class Rank(object):
         if not tfidf_option and not doc2vec_option and not word2vec_option and not autoencoder_option :
             tfidf_option = True
         self.text = pre_process(text)
+        print("text pre-process : {}".format(self.text))
         self.graph, self.sent2id = build_graph(self.text,
                                                tfidf_option=tfidf_option,
                                                doc2vec_option=doc2vec_option,
@@ -230,10 +230,12 @@ class Rank(object):
                         print("totals tokens :", total_tokens)
 
             summ_sents = sorted(summ_sents.items(), key=operator.itemgetter(1))
+            for sent in summ_sents:
+                print(sent[0])
             print("lenght sum :", len(summ_sents))
             summary_sentences = " ".join(sent[0] for sent in summ_sents)
             print("summary sentences : ", summary_sentences)
-        return summary_sentences, summ_sents
+        return summary_sentences
 
     def evaluation_rouge(self, summ_lexrank, summ):
         evaluator = Rouge()
