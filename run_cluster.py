@@ -1,7 +1,6 @@
 from src.Cluster import *
 
 # data_test = load_data_test()
-#
 # avg_rouge_cluster(data_test)
 # text ="""Trong các bữa tiệc của hai nhà hàng ở Hà Nội, cơm và thịt bò là thứ thường bị bỏ lại nhiều.
 # Đó là kết quả sau một năm rưỡi áp dụng công nghệ Winnow giúp các đầu bếp đo lường, kiểm tra và cắt giảm lượng thực phẩm dư thừa tại hai nhà hàng Le Beaulieu và Spices Garden (thuộc khách sạn Sofitel Legend Metropole Hà Nội). Theo đó, cơm là thực phẩm phải bỏ đi nhiều nhất, tính về khối lượng, còn tính về giá trị thì thịt bò đứng đầu danh sách.
@@ -13,7 +12,6 @@ from src.Cluster import *
 data_test= load_data_test()
 text = data_test[0]['text']
 summ = data_test[0]['summ']
-# print(text)
 cluster = Cluster(text)
 sentences, emb_sentences  = cluster.get_embedding_sentence()
 summ_cluster = cluster.get_summary()

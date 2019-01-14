@@ -114,7 +114,6 @@ def build_graph(text, similarityThreshold=0.1, max_threshold=1.0,
                     except :
                         print(" cannot cacl similar sentence ")
 
-
     return graph, sen2index
 
 
@@ -164,7 +163,7 @@ class Rank(object):
                  tfidf_option=False,
                  doc2vec_option=False,
                  word2vec_option=False,
-                 autoencoder_option =True):
+                 autoencoder_option =False):
         if not tfidf_option and not doc2vec_option and not word2vec_option and not autoencoder_option :
             tfidf_option = True
         self.text = pre_process(text)

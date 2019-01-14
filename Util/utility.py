@@ -42,10 +42,10 @@ def remove_stopwords(setence):
     return string
 
 
-def pre_process_text(text, remove_number_punctuation = False):
+def pre_process_text(text, remove_number_punctuation = True):
     """ normalize string """
     text = text.strip().lower()
-
+    print(text)
     if remove_number_punctuation :
         cont = re.sub(r'\b\d+(?:\.\d+)?\s+', '', text)
         cont = "".join(remove_punctuation(pattern, cont))
@@ -54,6 +54,7 @@ def pre_process_text(text, remove_number_punctuation = False):
     for i, v in mapping.items():
         if i in cont:
             cont = cont.replace(i, v)
+    print(cont)
     return cont
 
 

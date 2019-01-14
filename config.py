@@ -11,16 +11,18 @@ model_d2v_file = 'models/d2v.model'
 model_w2v_file = 'models/w2v.model'
 model_autoencoder = 'models/autoencoder.h5'
 
-#lda
+# lda
 save_lda = 'models/save_model_lda/lda_model.pkl'
 save_dictonary_lda = 'models/save_model_lda/lda_dict.pkl'
 NUM_TOPICS = 50
-
 
 # file save config
 config_token = 'data/config/config_token.json'
 stopword_path = 'data/stoplist/stopwords.txt'
 
+# file demo
+input_file = "data/data_demo/input.txt"
+output_file = "data/data_demo/output.txt"
 
 # var save config
 noun = ["N", "Ny", "Np"]
