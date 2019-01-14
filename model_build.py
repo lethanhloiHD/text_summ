@@ -43,3 +43,6 @@ def build_model_tfidf():
     data = load_data_train(directory_train)
     tf= Tfidf()
     tf.build_model_featureNames(data)
+
+if __name__ == '__main__':
+    build_model_lda()

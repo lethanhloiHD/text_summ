@@ -11,4 +11,14 @@ For requestment :
    - module using in file requestment.txt
 
 Run :
+   - Input : data/data_demo/input.txt
+   - Output : data/data_demo/output.txt
+   - Build_model : select one option for build model : python model_build.py
+
+ Run (simple) :
+                 python run_graph.py
+          or     python run_cluster.py
+
+ Run (template): input and output will show in the templates :
+                 python run_templates.py
     

@@ -28,30 +28,28 @@ def set_output(sentences):
         file.write(sentences)
 
 def run():
-    # autoencoder_option = doc2vec_option = word2vec_option = tfidf_option = False
-    # # parser = argparse.ArgumentParser(description='Description of your program')
-    # # parser.add_argument('-o', '--model', help='Using model for sentence presentation', required=True)
-    # # # parser.add_argument('-t', '--type', help='Choose graph-base or cluster-base sentences', required=True)
-    # # # parser.add_argument('-r', '--ratio', help='Choose number ratio cluster for cluster-base sentences',
-    # # #                     required=False, default=0.4)
-    # # parser.add_argument('-m', '--option_mmr', help='Using MMR for select sentence',
-    # #                     required=False,default=True)
-    # # parser.add_argument('-p', '--postion_score', help='Using Position_Score of sentence in document',
-    # #                     required=False, default= True)
-    # #
-    # # args = (parser.parse_args())
-    # # if args.model == 'tf':
-    # #     tfidf_option = True
-    # # elif args.model == 'w2v':
-    # #     word2vec_option = True
-    # # elif args.model == 'd2v':
-    # #     doc2vec_option = True
-    # # elif args.model == 'ae':
+    autoencoder_option = doc2vec_option = word2vec_option = tfidf_option = False
+    # parser = argparse.ArgumentParser(description='Description of your program')
+    # parser.add_argument('-o', '--model', help='Using model for sentence presentation', required=True)
+    # # parser.add_argument('-t', '--type', help='Choose graph-base or cluster-base sentences', required=True)
+    # # parser.add_argument('-r', '--ratio', help='Choose number ratio cluster for cluster-base sentences',
+    # #                     required=False, default=0.4)
+    # parser.add_argument('-m', '--option_mmr', help='Using MMR for select sentence',
+    #                     required=False,default=True)
+    # parser.add_argument('-p', '--postion_score', help='Using Position_Score of sentence in document',
+    #                     required=False, default= True)
+    #
+    # args = (parser.parse_args())
+    # if args.model == 'tf':
+    #     tfidf_option = True
+    # elif args.model == 'w2v':
+    #     word2vec_option = True
+    # elif args.model == 'd2v':
+    #     doc2vec_option = True
+    # elif args.model == 'ae':
     # #     autoencoder_option = True
 
     text = get_input()
-    pre_process(text)
-
     lexrank = Rank(text,tfidf_option=True,
                         doc2vec_option=False,
                         word2vec_option=False,

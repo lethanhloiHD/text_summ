@@ -56,7 +56,7 @@ class Cluster(object):
                  ratio = 0.4,
                  tfidf_option=False,
                  doc2vec_option=False,
-                 word2vec_option=True,
+                 word2vec_option=False,
                  autoencoder_option=False):
 
         self.text = pre_process_cluster(text)
