@@ -1,6 +1,6 @@
 # AUTOMATIC TEXT SUMMARIZATION for single document Vietnamese
 
-In my prpject ,  I use unsupervise model train in data on the site : soha.com, dantri.com, kenh14.com, ...
+In my prpject ,  I use unsupervise model train in data on the site : soha.vn, dantri.com, kenh14.vn, ...
 
 I using Doc2vec, Word2vec, LDA, Autoencoder are the unsuperivse model for representation sentence to vectorizer.
 After, I use Pagerank and K-mean for select sentence from graph or cluster. 
